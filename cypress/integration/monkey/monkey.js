@@ -14,6 +14,8 @@ const pct_selectors = Cypress.env('pctSelectors') || 16
 const pct_keys = Cypress.env('pctKeys') || 16
 const pct_spkeys = Cypress.env('pctSpKeys') || 16
 const pct_pgnav = Cypress.env('pctPgNav') || 16 
+const scroll_opts = { ensureScrollable: false }
+const click_opts = { force: true }
 
 const LOG_FILENAME = "../../../results/monkey-execution.html"
 
@@ -84,7 +86,7 @@ function randClick(){
         if(!!element){
             //Use cypress selector if any fits
             if(!!element.id){ //boolean that indicates if the element has a non-empty id
-                cy.get(`#${element.id}`).click()
+                cy.get(`#${element.id}`).click(click_opts)
                 info = `${element.tagName} with id: ${element.id}`
             }
             /*
@@ -108,7 +110,7 @@ function randClick(){
                     for(let i = 0 ;i < $candidates.length; i++){
                         let candidate = $candidates.get(i)
                         if(!Cypress.dom.isHidden(candidate)){
-                            cy.wrap(candidate).click({force:true})
+                            cy.wrap(candidate).click(click_opts)
                             break
                         }
                     }
@@ -117,7 +119,7 @@ function randClick(){
             }
         }
         else{
-            cy.get('body').click(randX, randY, {force:true})
+            cy.get('body').click(randX, randY, click_opts)
             info = `Position: (${randX}, ${randY}). INVALID, no selectable element`
         }
         cy.task("logCommand", { funtype: "Random click", info: info})
@@ -138,7 +140,7 @@ function randDClick(){
         if(!!element){
             //Use cypress selector if any fits
             if(!!element.id){ //boolean that indicates if the element has a non-empty id
-                cy.get(`#${element.id}`).dblclick()
+                cy.get(`#${element.id}`).dblclick(click_opts)
                 info = `${element.tagName} with id: ${element.id}`
             }
             /*
@@ -162,7 +164,7 @@ function randDClick(){
                     for(let i = 0; i < $candidates.length; i++){
                         let candidate = $candidates.get(i)
                         if(!Cypress.dom.isHidden(candidate)){
-                            cy.wrap(candidate).dblclick({force:true})
+                            cy.wrap(candidate).dblclick(click_opts)
                             break
                         }
                     }
@@ -171,7 +173,7 @@ function randDClick(){
             }
         }
         else{
-            cy.get('body').dblclick(randX, randY, {force:true})
+            cy.get('body').dblclick(randX, randY, click_opts)
             info = `Position: (${randX}, ${randY}). INVALID, no selectable element`
         }
         cy.task("logCommand", { funtype: "Random double click", info: info})
@@ -192,7 +194,7 @@ function randRClick(){
         if(!!element){
             //Use cypress selector if any fits
             if(!!element.id){ //boolean that indicates if the element has a non-empty id
-                cy.get(`#${element.id}`).rightclick()
+                cy.get(`#${element.id}`).rightclick(click_opts)
                 info = `${element.tagName} with id: ${element.id}`
             }
             /*else if(!!element.className){ //boolean that indicates if the element has a non-empty className
@@ -215,7 +217,7 @@ function randRClick(){
                     for(let i = 0; i < $candidates.length; i++){
                         let candidate = $candidates.get(i)
                         if(!Cypress.dom.isHidden(candidate)){
-                            cy.wrap(candidate).rightclick({force:true})
+                            cy.wrap(candidate).rightclick(click_opts)
                             break
                         }
                     }
@@ -224,7 +226,7 @@ function randRClick(){
             }
         }
         else{
-            cy.get('body').rightclick(randX, randY, {force:true})
+            cy.get('body').rightclick(randX, randY, click_opts)
             info = `Position: (${randX}, ${randY}). INVALID, no selectable element`
         }        
         cy.task("logCommand", { funtype: "Random right click", info: info})
@@ -288,11 +290,11 @@ function avPag(){
     if(curPageMaxY - curY >= viewportHeight){ 
         if(curPageMaxY - (curY + viewportHeight) >= viewportHeight){
             curY = curY + viewportHeight
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
         } 
         else{
             curY = curPageMaxY - viewportHeight
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
             info += "Page limit reached! "
         }
         info += `Successfully scrolled down from y=${prev} to y=${curY}`
@@ -312,12 +314,12 @@ function rePag(){
     else{
         if(viewportHeight > curY){
             curY =  0
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
             info += "Page limit reached! "
         }
         else{
             curY = curY - viewportHeight
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
         }
         info += `Successfully scrolled up from y=${prev} to y=${curY}`
     }
@@ -330,11 +332,11 @@ function horizontalScrollFw(){
     if(curPageMaxX - curX >= viewportWidth){ 
         if(curPageMaxX - (curX + viewportWidth) >= viewportWidth){
             curX = curX + viewportWidth
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
         } 
         else{
             curX = curPageMaxX - viewportWidth
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
             info += "Page limit reached! "
         }
         info += `Successfully scrolled to the right from x=${prev} to x=${curX}`
@@ -354,12 +356,12 @@ function horizontalScrollBk(){
     else{
         if(viewportWidth > curX){
             curX =  0
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
             info += "Page limit reached! "
         }
         else{
             curX = curX - viewportWidth
-            cy.scrollTo(curX, curY)
+            cy.scrollTo(curX, curY, scroll_opts)
         }
         info += `Successfully scrolled to the left from x=${prev} to x=${curX}`
     }
@@ -511,10 +513,10 @@ var pending_events = [,,,,,]
 
 describe( `${appName} under monkeys`, function() {
     //Listener
-    cy.on('uncaught:exception', (err)=>{
-        cy.task('genericLog', {'message':`An exception occurred: ${err}`});
-        cy.task('genericReport', {'html': `<p><strong>Uncaught exception: </strong>${err}</p>`});
-    });
+    // cy.on('uncaught:exception', (err)=>{
+    //     cy.task('genericLog', {'message':`An exception occurred: ${err}`});
+    //     cy.task('genericReport', {'html': `<p><strong>Uncaught exception: </strong>${err}</p>`});
+    // });
     cy.on('window:alert', (text)=>{
         cy.task('genericLog', {'message':`An alert was fired with the message: "${text}"`});
         cy.task('genericReport', {'html': `<p><strong>An alert was fired with the message: </strong>${text}</p>`});
@@ -534,7 +536,7 @@ describe( `${appName} under monkeys`, function() {
         if(pcg === 100){
 
             pending_events[0] = events*pct_clicks/100
-            pending_events[1] = events*pct_scrolls/100
+            pending_events[1] = 0
             pending_events[2] = events*pct_selectors/100
             pending_events[3] = events*pct_keys/100
             pending_events[4] = events*pct_spkeys/100
@@ -544,6 +546,8 @@ describe( `${appName} under monkeys`, function() {
                 let d = win.document
                 curPageMaxY = Math.max( d.body.scrollHeight, d.body.offsetHeight, d.documentElement.clientHeight, d.documentElement.scrollHeight, d.documentElement.offsetHeight) - win.innerHeight
                 curPageMaxX = Math.max( d.body.scrollWidth, d.body.offsetWidth, d.documentElement.clientWidth, d.documentElement.scrollWidth, d.documentElement.offsetWidth) - win.innerWidth
+                cy.task('genericLog',  {"message": 'Calling User Hook'});
+                require('./monkey-hook')(cy, win);
             })
             cy.wait(1000)
             //Add an event for each type of event in order to enter the else statement of randomEvent method
